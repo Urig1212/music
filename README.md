@@ -45,6 +45,14 @@ Expected flow:
 3. Deploy
 4. Open the production link on iPhone Safari and allow microphone access
 
+Recommended phone test:
+
+1. Open the Vercel link in `Safari`
+2. Put the song on speaker, not headphones
+3. Tap `Enable microphone`
+4. Calibrate for a few seconds
+5. Start the run
+
 ## Run tests
 
 1. Open Unity Test Runner.

@@ -29,7 +29,11 @@ button {
 
 .shell {
   min-height: 100vh;
-  padding: 16px;
+  padding:
+    max(12px, env(safe-area-inset-top))
+    16px
+    max(12px, env(safe-area-inset-bottom))
+    16px;
   display: grid;
   grid-template-rows: auto 1fr;
   gap: 14px;
@@ -144,6 +148,10 @@ h1 {
   color: #1c1214;
   font-weight: 800;
   letter-spacing: 0.02em;
+}
+
+.actions button:active {
+  transform: translateY(1px) scale(0.995);
 }
 
 .actions .secondary {

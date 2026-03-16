@@ -242,6 +242,9 @@ class Game {
   };
   private calibrationDoneAt = 0;
   private calibrationQuality: "unknown" | "usable" | "weak" | "fallback" = "unknown";
+  private readonly overlayRoot: HTMLElement;
+  private readonly supportsMic: boolean;
+  private readonly isSecure: boolean;
 
   constructor(root: HTMLElement) {
     root.innerHTML = `
@@ -278,6 +281,12 @@ class Game {
     this.overlayBody = root.querySelector("#overlay-body")!;
     this.actionPrimary = root.querySelector<HTMLButtonElement>("#primary")!;
     this.actionSecondary = root.querySelector<HTMLButtonElement>("#secondary")!;
+    this.overlayRoot = root.querySelector<HTMLElement>("#overlay")!;
+    this.supportsMic = Boolean(navigator.mediaDevices?.getUserMedia);
+    this.isSecure =
+      window.location.protocol === "https:" ||
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1";
 
     this.bestValue.textContent = this.best.toFixed(1);
     this.actionPrimary.addEventListener("click", () => this.handlePrimary());
@@ -285,7 +294,9 @@ class Game {
     this.canvas.addEventListener("pointerdown", this.onPointer);
     this.canvas.addEventListener("pointermove", this.onPointer);
     window.addEventListener("resize", () => this.resize());
+    document.addEventListener("visibilitychange", this.onVisibilityChange);
     this.resize();
+    this.bootstrapOverlay();
     requestAnimationFrame((t) => this.frame(t));
   }
 
@@ -295,6 +306,26 @@ class Game {
   };
 
   private async handlePrimary() {
+    if (!this.supportsMic) {
+      this.setOverlay(
+        "Browser not supported",
+        "This browser does not expose microphone access. Open the link in Safari on iPhone or a modern Chromium browser.",
+        "Open in supported browser",
+        false,
+      );
+      return;
+    }
+
+    if (!this.isSecure) {
+      this.setOverlay(
+        "HTTPS required",
+        "Microphone access only works on HTTPS pages or localhost. Open the deployed Vercel link instead of a raw local file.",
+        "OK",
+        false,
+      );
+      return;
+    }
+
     if (this.state === "home") {
       try {
         await this.audio.request();
@@ -359,6 +390,18 @@ class Game {
       true,
     );
   }
+
+  private onVisibilityChange = () => {
+    if (document.hidden && this.state === "playing") {
+      this.state = "ready";
+      this.setOverlay(
+        "Paused",
+        "The run paused when the page lost focus. Tap Start run to continue with a fresh run.",
+        "Start run",
+        true,
+      );
+    }
+  };
 
   private frame(now: number) {
     const delta = this.lastAt === 0 ? 16 : now - this.lastAt;
@@ -573,11 +616,11 @@ class Game {
     this.overlayBody.textContent = body;
     this.actionPrimary.textContent = primary;
     this.actionSecondary.hidden = !showSecondary;
-    this.canvas.parentElement?.querySelector<HTMLElement>("#overlay")?.classList.remove("hidden");
+    this.overlayRoot.classList.remove("hidden");
   }
 
   private hideOverlay() {
-    this.canvas.parentElement?.querySelector<HTMLElement>("#overlay")?.classList.add("hidden");
+    this.overlayRoot.classList.add("hidden");
   }
 
   private resize() {
@@ -590,6 +633,37 @@ class Game {
     this.canvas.style.width = `${rect.width}px`;
     this.canvas.style.height = `${rect.height}px`;
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  private bootstrapOverlay() {
+    this.actionSecondary.hidden = true;
+
+    if (!this.supportsMic) {
+      this.setOverlay(
+        "Browser not supported",
+        "Open this link in Safari on iPhone or a modern browser with microphone support.",
+        "OK",
+        false,
+      );
+      return;
+    }
+
+    if (!this.isSecure) {
+      this.setOverlay(
+        "HTTPS required",
+        "Microphone access only works on HTTPS pages or localhost. Use the Vercel link for phone testing.",
+        "OK",
+        false,
+      );
+      return;
+    }
+
+    this.setOverlay(
+      "Survive inside the song",
+      "Tap Enable microphone, keep music playing nearby, then drag left and right to dodge sound waves.",
+      "Enable microphone",
+      false,
+    );
   }
 }
 
