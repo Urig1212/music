@@ -161,6 +161,8 @@ class AudioEngine {
         message: "No signal detected yet.",
         energy: 0,
         confidence: 0,
+        peakEnergy: 0,
+        activeRatio: 0,
       };
     }
 
@@ -168,32 +170,42 @@ class AudioEngine {
       (acc, frame) => {
         acc.energy += frame.energy;
         acc.confidence += frame.confidence;
+        acc.peakEnergy = Math.max(acc.peakEnergy, frame.energy);
+        if (frame.energy >= 0.04 || frame.confidence >= 0.12) {
+          acc.activeFrames += 1;
+        }
         if (frame.peak) {
           acc.peaks += 1;
         }
         return acc;
       },
-      { energy: 0, confidence: 0, peaks: 0 },
+      { energy: 0, confidence: 0, peaks: 0, peakEnergy: 0, activeFrames: 0 },
     );
 
     const energy = totals.energy / this.calibrationFrames.length;
     const confidence = totals.confidence / this.calibrationFrames.length;
+    const activeRatio = totals.activeFrames / this.calibrationFrames.length;
+    const peakEnergy = totals.peakEnergy;
 
-    if (energy >= 0.14 && confidence >= 0.34) {
+    if ((energy >= 0.1 && confidence >= 0.22) || (peakEnergy >= 0.22 && activeRatio >= 0.3)) {
       return {
         quality: "usable" as const,
         message: "Signal is strong. Start the run.",
         energy,
         confidence,
+        peakEnergy,
+        activeRatio,
       };
     }
 
-    if (energy >= 0.07 && confidence >= 0.2) {
+    if ((energy >= 0.04 && confidence >= 0.1) || activeRatio >= 0.18 || peakEnergy >= 0.12) {
       return {
         quality: "weak" as const,
         message: "Playable, but louder music should feel better.",
         energy,
         confidence,
+        peakEnergy,
+        activeRatio,
       };
     }
 
@@ -202,6 +214,8 @@ class AudioEngine {
       message: "Too quiet. Raise volume, move closer, or use an external speaker.",
       energy,
       confidence,
+      peakEnergy,
+      activeRatio,
     };
   }
 }
@@ -215,6 +229,7 @@ class Game {
   private readonly statusValue: HTMLElement;
   private readonly overlayTitle: HTMLElement;
   private readonly overlayBody: HTMLElement;
+  private readonly overlayMetrics: HTMLElement;
   private readonly actionPrimary: HTMLButtonElement;
   private readonly actionSecondary: HTMLButtonElement;
 
@@ -277,6 +292,7 @@ class Game {
               <p class="eyebrow">Song Survival</p>
               <h1 id="overlay-title">Survive inside the song</h1>
               <p id="overlay-body">Open this in Safari on iPhone, play music nearby, then let the browser use the microphone.</p>
+              <p id="overlay-metrics" class="metrics">Live signal will appear here once the mic is enabled.</p>
               <p class="micro-copy">Best with speaker audio in the room. Headphones will usually make the game hear nothing.</p>
               <div class="actions">
                 <button id="primary">Enable microphone</button>
@@ -300,6 +316,7 @@ class Game {
     this.statusValue = root.querySelector("#status")!;
     this.overlayTitle = root.querySelector("#overlay-title")!;
     this.overlayBody = root.querySelector("#overlay-body")!;
+    this.overlayMetrics = root.querySelector("#overlay-metrics")!;
     this.actionPrimary = root.querySelector<HTMLButtonElement>("#primary")!;
     this.actionSecondary = root.querySelector<HTMLButtonElement>("#secondary")!;
     this.overlayRoot = root.querySelector<HTMLElement>("#overlay")!;
@@ -360,11 +377,6 @@ class Game {
           true,
         );
       }
-      return;
-    }
-
-    if (this.state === "ready" && this.calibrationQuality === "fallback") {
-      this.beginCalibration();
       return;
     }
 
@@ -441,14 +453,17 @@ class Game {
       this.setOverlay(
         result.quality === "fallback" ? "Need stronger audio" : "Ready",
         result.message,
-        result.quality === "fallback" ? "Try again" : "Start run",
+        "Start run",
         true,
       );
-      this.actionPrimary.textContent = result.quality === "fallback" ? "Try again" : "Start run";
+      this.overlayMetrics.textContent =
+        `Avg ${result.energy.toFixed(2)} • Peak ${result.peakEnergy.toFixed(2)} • Active ${Math.round(result.activeRatio * 100)}%`;
+      this.actionPrimary.textContent = "Start run";
       this.actionSecondary.textContent = "Recalibrate";
     }
 
     this.statusValue.textContent = this.buildStatus();
+    this.updateOverlayMetrics();
 
     if (this.state !== "playing") {
       return;
@@ -685,6 +700,16 @@ class Game {
       "Enable microphone",
       false,
     );
+    this.overlayMetrics.textContent = "Live signal will appear here once the mic is enabled.";
+  }
+
+  private updateOverlayMetrics() {
+    if (this.state === "playing") {
+      return;
+    }
+
+    this.overlayMetrics.textContent =
+      `Live ${this.currentAudio.energy.toFixed(2)} • Bass ${this.currentAudio.bass.toFixed(2)} • Confidence ${this.currentAudio.confidence.toFixed(2)}`;
   }
 }
 

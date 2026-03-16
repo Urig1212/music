@@ -255,6 +255,13 @@ h1 {
   font-size: 1rem;
 }
 
+.metrics {
+  margin: 12px 0 0;
+  color: #9de7ff;
+  font-size: 0.92rem;
+  letter-spacing: 0.02em;
+}
+
 .micro-copy {
   margin: 12px 0 0;
   color: rgba(255, 248, 242, 0.54);
