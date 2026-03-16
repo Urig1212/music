@@ -249,6 +249,13 @@ class Game {
   constructor(root: HTMLElement) {
     root.innerHTML = `
       <main class="shell">
+        <header class="topbar">
+          <div class="brand-lockup">
+            <p class="brand-kicker">A music-reactive web game</p>
+            <p class="brand-credit">Created by אורי גליקמן</p>
+          </div>
+          <div class="brand-pill">iPhone Safari</div>
+        </header>
         <section class="hud">
           <div class="stat"><span>Score</span><strong id="score">0.0</strong></div>
           <div class="stat"><span>Best</span><strong id="best">0.0</strong></div>
@@ -258,9 +265,19 @@ class Game {
           <canvas id="game"></canvas>
           <div class="overlay" id="overlay">
             <div class="card">
+              <div class="cover-art" aria-hidden="true">
+                <div class="cover-ring cover-ring-a"></div>
+                <div class="cover-ring cover-ring-b"></div>
+                <div class="cover-wave"></div>
+                <div class="cover-face">
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
               <p class="eyebrow">Song Survival</p>
               <h1 id="overlay-title">Survive inside the song</h1>
               <p id="overlay-body">Open this in Safari on iPhone, play music nearby, then let the browser use the microphone.</p>
+              <p class="micro-copy">Best with speaker audio in the room. Headphones will usually make the game hear nothing.</p>
               <div class="actions">
                 <button id="primary">Enable microphone</button>
                 <button id="secondary" class="secondary">Retry calibration</button>
@@ -268,6 +285,10 @@ class Game {
             </div>
           </div>
         </section>
+        <footer class="footer-note">
+          <span>Every song becomes a different survival run.</span>
+          <span>Share the link. Try another track. Beat your best.</span>
+        </footer>
       </main>
     `;
 
