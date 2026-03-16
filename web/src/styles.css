@@ -21,7 +21,9 @@ body,
 
 body {
   min-height: 100vh;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 button {
@@ -38,6 +40,7 @@ button {
   display: grid;
   grid-template-rows: auto 1fr;
   gap: 14px;
+  align-content: start;
 }
 
 .topbar {
@@ -113,7 +116,7 @@ button {
 
 .stage-wrap {
   position: relative;
-  min-height: 68vh;
+  min-height: 60vh;
   border-radius: 28px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -136,6 +139,7 @@ button {
   padding: 18px;
   background: rgba(6, 9, 12, 0.38);
   backdrop-filter: blur(10px);
+  overflow-y: auto;
 }
 
 .overlay.hidden {
@@ -313,6 +317,16 @@ h1 {
   }
 
   .stage-wrap {
-    min-height: 72vh;
+    min-height: 52vh;
+  }
+
+  .overlay {
+    place-items: start center;
+    padding-top: 18px;
+    padding-bottom: 24px;
+  }
+
+  .card {
+    margin-top: 6px;
   }
 }
