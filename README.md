@@ -1,6 +1,9 @@
 # Song Survival MVP
 
-Unity prototype for an iPhone-first portrait survival game that reacts to live microphone input instead of integrating with Spotify or any music service.
+This repository now contains two directions for the same concept:
+
+- `Unity prototype` for native/mobile experimentation
+- `Web MVP` in `web/` for link-based testing and Vercel deployment
 
 ## What is included
 
@@ -19,6 +22,28 @@ Unity prototype for an iPhone-first portrait survival game that reacts to live m
 2. Create an empty scene if Unity does not create one automatically.
 3. Press Play. The bootstrapper will create camera, UI, player, and hazard systems at runtime.
 4. On device, enable microphone permission and test with music from the same device speaker first. If readiness is weak, use the built-in retry flow or move to an external speaker.
+
+## Web MVP
+
+The deployable browser version lives in `web/`.
+
+### Local development
+
+1. `cd web`
+2. `npm install`
+3. `npm run dev`
+4. Open the shown local URL in a browser. For iPhone, use Safari when testing on-device.
+
+### Vercel deployment
+
+This repo includes [vercel.json](C:\Users\111\codexxxxx\music\vercel.json) so Vercel can build the `web/` app directly from the repository root.
+
+Expected flow:
+
+1. Import the GitHub repo into Vercel
+2. Keep the detected root at the repository root
+3. Deploy
+4. Open the production link on iPhone Safari and allow microphone access
 
 ## Run tests
 

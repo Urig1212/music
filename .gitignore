@@ -27,6 +27,12 @@
 *.svd
 *.pdb
 
+# Node / web build
+node_modules/
+web/node_modules/
+dist/
+web/dist/
+
 # OS files
 .DS_Store
 Thumbs.db
